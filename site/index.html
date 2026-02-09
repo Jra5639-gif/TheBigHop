@@ -182,6 +182,14 @@ tr:last-child td{ border-bottom:none; }
   background: rgba(255,255,255,.03);
   color: var(--muted);
 }
+    /* Prevent long TXIDs from breaking layout */
+.travelLogTable td.txid,
+.travelLogTable td:nth-child(5) {  /* adjust if TXID column index differs */
+  max-width: 180px;        /* tweak to taste */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .nav{
   display:flex; gap:10px; flex-wrap:wrap; margin-top: 6px;
