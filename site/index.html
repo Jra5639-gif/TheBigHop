@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Big Hop</title>
+  <meta name="description" content="A message that moves only when someone decides to move it. Distance, waiting, and a public record of hops." />
+
+  <style>
+:root{
+  color-scheme: light dark;
+  --border: rgba(127,127,127,.22);
+  --border2: rgba(127,127,127,.16);
+  --card: rgba(255,255,255,.06);
+  --card2: rgba(255,255,255,.05);
+  --shadow: rgba(0,0,0,.18);
+  --muted: rgba(255,255,255,.74);
+  --muted2: rgba(255,255,255,.60);
+  --bg0: rgba(10,10,12,1);
+  --glass: rgba(255,255,255,.05);
+  --accent: rgba(0,180,255,.30);
+  --accent2: rgba(0,255,180,.22);
+}
+@media (prefers-color-scheme: light){
+  :root{
+    --shadow: rgba(0,0,0,.10);
+    --muted: rgba(0,0,0,.68);
+    --muted2: rgba(0,0,0,.54);
+    --card: rgba(127,127,127,.08);
+    --card2: rgba(127,127,127,.06);
+    --bg0: rgba(250,250,252,1);
+    --glass: rgba(255,255,255,.70);
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  line-height:1.45;
+  background:
+    radial-gradient(1200px 600px at 18% 0%, rgba(0,180,255,.16), transparent 60%),
+    radial-gradient(1200px 600px at 90% 10%, rgba(0,255,180,.12), transparent 55%),
+    radial-gradient(900px 500px at 50% 100%, rgba(160,90,255,.10), transparent 60%),
+    var(--bg0);
+  color: rgba(255,255,255,.92);
+}
+@media (prefers-color-scheme: light){
+  body{ color: rgba(0,0,0,.92); }
+}
+a{ color: inherit; text-decoration: none; }
+a.underline{ text-decoration: underline; text-underline-offset: 2px; }
+.wrap{ max-width: 1020px; margin: 0 auto; padding: 22px 16px 44px; }
+header{
+  display:flex; gap:16px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
+  margin-bottom: 16px;
+}
+h1{ margin:0 0 6px 0; font-size:1.75rem; letter-spacing:.2px; }
+.sub{ margin:0; max-width: 75ch; color: var(--muted); }
+.cta{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; margin-left:auto; }
+.pill{
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:.92rem;
+  background: rgba(255,255,255,.04);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px var(--shadow);
+  white-space: nowrap;
+}
+.btn{
+  border:1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 800;
+  background: rgba(255,255,255,.04);
+  box-shadow: 0 10px 30px var(--shadow);
+  backdrop-filter: blur(6px);
+  display:inline-flex; gap:8px; align-items:center;
+}
+.btn:active{ transform: translateY(1px); }
+.grid{
+  display:grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap: 14px;
+  align-items: stretch;
+}
+@media (max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+.card{
+  border:1px solid var(--border);
+  border-radius: 18px;
+  padding: 14px;
+  background: var(--card);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 14px 50px var(--shadow);
+}
+.card h2{ margin:0 0 10px 0; font-size: 1.07rem; }
+.mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+.small{ font-size: .92rem; color: var(--muted); }
+.tiny{ font-size: .86rem; color: var(--muted2); }
+.sep{ height:1px; background: var(--border2); margin: 12px 0; }
+.metrics{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+.metric{
+  border:1px solid var(--border2);
+  border-radius: 14px;
+  padding: 10px;
+  background: var(--card2);
+}
+.k{ font-size:.82rem; color: var(--muted2); }
+.v{ font-size: 1.06rem; font-weight: 850; margin-top:2px; }
+#map{ height: 360px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); background: rgba(255,255,255,.03); }
+
+.addrRow{ display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start; }
+.addrBox{
+  flex: 1 1 330px;
+  min-width: 280px;
+  border:1px solid var(--border2);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255,255,255,.03);
+}
+.qrBox{
+  width: 168px;
+  border:1px solid var(--border2);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255,255,255,.03);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.miniBtn{
+  border:1px solid var(--border);
+  border-radius: 12px;
+  padding: 9px 10px;
+  background: rgba(255,255,255,.04);
+  font-weight: 850;
+  cursor:pointer;
+  box-shadow: 0 10px 30px var(--shadow);
+}
+.miniBtn:active{ transform: translateY(1px); }
+form label{ display:block; font-size:.86rem; color: var(--muted2); margin-top: 10px; }
+input, select, textarea{
+  width: 100%;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border2);
+  background: rgba(255,255,255,.03);
+  color: inherit;
+  outline: none;
+}
+textarea{ min-height: 90px; resize: vertical; }
+.row2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+@media (max-width: 560px){ .row2{ grid-template-columns: 1fr; } }
+
+table{
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 14px;
+  overflow:hidden;
+  border:1px solid var(--border2);
+  background: rgba(255,255,255,.03);
+}
+th, td{
+  text-align:left;
+  padding: 10px;
+  border-bottom: 1px solid var(--border2);
+  font-size: .95rem;
+  vertical-align: top;
+}
+th{ font-size: .82rem; color: var(--muted2); }
+tr:last-child td{ border-bottom:none; }
+
+.notice{
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(255,255,255,.03);
+  color: var(--muted);
+}
+
+.nav{
+  display:flex; gap:10px; flex-wrap:wrap; margin-top: 6px;
+}
+.nav a{
+  border:1px solid var(--border2);
+  border-radius: 999px;
+  padding: 7px 10px;
+  background: rgba(255,255,255,.03);
+  color: var(--muted);
+}
+.nav a:hover{ filter: brightness(1.08); }
+footer{ margin-top: 16px; color: var(--muted); font-size: .92rem; }
+
+  </style>
+
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin="" defer></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" defer></script>
+
+  <script>
+  // Edit these, deploy, then forget it.
+  window.TM_CONFIG = {
+    originLabel: "Vancouver Island, BC, Canada",
+    btcAddress: "bc1qexampleaddressxxxxxxxxxxxxxxxxxxxxxx",
+
+    // Live (Render/VPS): "/api"  |  Static-only: ""
+    apiBase: "/api",
+
+    logJsonPath: "/data/log.json",
+    explorerTxBase: "https://blockstream.info/tx/",
+    explorerAddrBase: "https://blockstream.info/address/",
+    maxLogRows: 80,
+
+    destinations: [
+      {label:"Antarctica", type:"country", match:"Antarctica"},
+      {label:"Japan", type:"country", match:"Japan"},
+      {label:"United Kingdom", type:"country", match:"United Kingdom"},
+      {label:"United States", type:"country", match:"United States"},
+      {label:"Brazil", type:"country", match:"Brazil"},
+      {label:"India", type:"country", match:"India"},
+      {label:"Australia", type:"country", match:"Australia"},
+      {label:"London", type:"city", match:"London"},
+      {label:"Tokyo", type:"city", match:"Tokyo"},
+      {label:"Sydney", type:"city", match:"Sydney"}
+    ]
+  };
+  </script>
+
+  <script>
+
+(function(){
+  const cfg = window.TM_CONFIG;
+
+  const $ = (sel)=>document.querySelector(sel);
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+  function fmtBtc(n){
+    const x = Number(n||0);
+    return (Math.round(x*1e8)/1e8).toFixed(8);
+  }
+  function fmtDate(iso){
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "—";
+    return d.toLocaleString(undefined, {year:"numeric",month:"short",day:"2-digit",hour:"2-digit",minute:"2-digit"});
+  }
+  function haversineKm(lat1, lon1, lat2, lon2){
+    const R = 6371;
+    const toRad = (x)=>x*Math.PI/180;
+    const dLat = toRad(lat2-lat1);
+    const dLon = toRad(lon2-lon1);
+    const a = Math.sin(dLat/2)**2 +
+              Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R*c;
+  }
+  function uniqueCountries(entries){
+    return new Set(entries.map(e=>String(e.country||"").toLowerCase().trim()).filter(Boolean)).size;
+  }
+
+  async function fetchJson(url){
+    const r = await fetch(url, {headers: {"Accept":"application/json"}});
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return await r.json();
+  }
+
+  async function loadLog(){
+    if (cfg.apiBase){
+      try{
+        return await fetchJson(cfg.apiBase.replace(/\/$/,"") + "/log");
+      }catch(e){}
+    }
+    return await fetchJson(cfg.logJsonPath);
+  }
+
+  async function loadBalance(){
+    if (!cfg.apiBase) return null;
+    try{
+      const s = await fetchJson(cfg.apiBase.replace(/\/$/,"") + "/stats");
+      return s.balance_btc ?? null;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function setCopy(){
+    const btn = $("#copyBtn");
+    if (!btn) return;
+    btn.addEventListener("click", async ()=>{
+      try{
+        await navigator.clipboard.writeText(cfg.btcAddress);
+        btn.textContent = "Copied";
+        setTimeout(()=>btn.textContent="Copy address", 900);
+      }catch{
+        btn.textContent = "Copy failed";
+        setTimeout(()=>btn.textContent="Copy address", 1200);
+      }
+    });
+  }
+
+  function renderAddress(){
+    $("#btcAddress").textContent = cfg.btcAddress;
+    const link = $("#addrExplorer");
+    link.href = cfg.explorerAddrBase + encodeURIComponent(cfg.btcAddress);
+  }
+
+  function renderQR(){
+    const el = $("#qr");
+    if (!el) return;
+    if (!window.QRCode) return;
+    el.innerHTML = "";
+    new QRCode(el, {
+      text: "bitcoin:" + cfg.btcAddress,
+      width: 140,
+      height: 140,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+
+  function computeHopStats(entries){
+    let totalKm = 0;
+    let biggest = {km: 0, from: null, to: null, alias: "", txid: ""};
+
+    for (let i=1;i<entries.length;i++){
+      const a = entries[i-1], b = entries[i];
+      if (Number.isFinite(a.lat) && Number.isFinite(a.lng) && Number.isFinite(b.lat) && Number.isFinite(b.lng)){
+        const km = haversineKm(a.lat, a.lng, b.lat, b.lng);
+        totalKm += km;
+        if (km > biggest.km){
+          biggest = {km, from: a, to: b, alias: b.alias||"", txid: b.txid||""};
+        }
+      }
+    }
+    const last = entries[entries.length-1] || null;
+    const prev = entries.length>1 ? entries[entries.length-2] : null;
+    let lastHopKm = null;
+    if (last && prev && Number.isFinite(last.lat) && Number.isFinite(prev.lat)){
+      lastHopKm = haversineKm(prev.lat, prev.lng, last.lat, last.lng);
+    }
+
+    return {totalKm, biggest, last, prev, lastHopKm};
+  }
+
+  function renderStatus(entries, stats){
+    $("#originLine").textContent = cfg.originLabel;
+
+    $("#entryCount").textContent = String(entries.length);
+    $("#countriesReached").textContent = entries.length ? String(uniqueCountries(entries)) : "—";
+    $("#totalKm").textContent = entries.length ? String(Math.round(stats.totalKm)) : "—";
+
+    if (!entries.length){
+      $("#lastLoc").textContent = "—";
+      $("#prevLoc").textContent = "—";
+      $("#lastHopKm").textContent = "—";
+      $("#hopLine").textContent = "—";
+      $("#bigHopKm").textContent = "—";
+      $("#bigHopLine").textContent = "—";
+      return;
+    }
+
+    $("#lastLoc").textContent = `${stats.last.city}, ${stats.last.country}`;
+    $("#prevLoc").textContent = stats.prev ? `${stats.prev.city}, ${stats.prev.country}` : "—";
+    $("#lastHopKm").textContent = stats.lastHopKm ? String(Math.round(stats.lastHopKm)) : "—";
+    $("#hopLine").textContent = stats.prev
+      ? `${stats.prev.city} → ${stats.last.city} — ${Math.round(stats.lastHopKm)} km`
+      : "First entry";
+
+    if (stats.biggest && stats.biggest.km > 0){
+      $("#bigHopKm").textContent = String(Math.round(stats.biggest.km));
+      const from = `${stats.biggest.from.city}, ${stats.biggest.from.country}`;
+      const to = `${stats.biggest.to.city}, ${stats.biggest.to.country}`;
+      const alias = stats.biggest.alias ? ` — ${stats.biggest.alias}` : "";
+      $("#bigHopLine").innerHTML = `
+        <span class="mono">${escapeHtml(from)} → ${escapeHtml(to)}</span>${escapeHtml(alias)}
+        ${stats.biggest.txid ? ` — <a class="underline mono" href="${cfg.explorerTxBase + encodeURIComponent(stats.biggest.txid)}" target="_blank" rel="noreferrer">TXID</a>` : ""}
+      `;
+    }else{
+      $("#bigHopKm").textContent = "—";
+      $("#bigHopLine").textContent = "—";
+    }
+  }
+
+  async function renderMap(stats){
+    const mapEl = $("#map");
+    if (!mapEl) return;
+    if (!stats.last) return;
+
+    while (typeof L === "undefined"){
+      await new Promise(r=>setTimeout(r, 25));
+    }
+    const map = L.map("map", {scrollWheelZoom:false});
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom:18,
+      attribution:"&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    const last = stats.last;
+    const prev = stats.prev;
+
+    L.marker([last.lat, last.lng]).addTo(map)
+      .bindPopup(`<b>Last location</b><br>${escapeHtml(last.city)}, ${escapeHtml(last.country)}`);
+
+    let bounds = L.latLngBounds([[last.lat, last.lng]]);
+
+    if (prev){
+      L.marker([prev.lat, prev.lng]).addTo(map)
+        .bindPopup(`<b>Previous</b><br>${escapeHtml(prev.city)}, ${escapeHtml(prev.country)}`);
+      const line = L.polyline([[prev.lat, prev.lng],[last.lat, last.lng]], {weight:3}).addTo(map);
+      line.bindPopup(`<b>Last hop</b><br>${escapeHtml(prev.city)} → ${escapeHtml(last.city)}`);
+      bounds = L.latLngBounds([[prev.lat, prev.lng],[last.lat, last.lng]]);
+    }
+    map.fitBounds(bounds.pad(0.45));
+  }
+
+  function renderLog(entries){
+    const tbody = $("#logBody");
+    tbody.innerHTML = "";
+    const rows = entries.slice().reverse().slice(0, cfg.maxLogRows || 100);
+    rows.forEach((e, i)=>{
+      const tr = document.createElement("tr");
+      const tx = e.txid || "";
+      const txCell = tx
+        ? `<a class="underline mono" href="${cfg.explorerTxBase + encodeURIComponent(tx)}" target="_blank" rel="noreferrer">${escapeHtml(tx)}</a>`
+        : "—";
+      tr.innerHTML = `
+        <td>${entries.length - i}</td>
+        <td>${escapeHtml(e.alias || "—")}</td>
+        <td>${escapeHtml(e.city)}, ${escapeHtml(e.country)}</td>
+        <td class="mono">${fmtBtc(e.amount_btc)} BTC</td>
+        <td>${fmtDate(e.iso_date)}</td>
+        <td class="mono">${txCell}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderDestinations(entries){
+    const list = (cfg.destinations || []);
+    const out = $("#destBody");
+    out.innerHTML = "";
+
+    const norm = (s)=>String(s||"").trim().toLowerCase();
+    const firstMatch = (d)=>{
+      for (const e of entries){
+        if (d.type === "country" && norm(e.country) === norm(d.match)) return e;
+        if (d.type === "city" && norm(e.city) === norm(d.match)) return e;
+      }
+      return null;
+    };
+
+    list.forEach((d)=>{
+      const hit = firstMatch(d);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(d.label)}</td>
+        <td>${hit ? `✅ Claimed` : `❌ Unclaimed`}</td>
+        <td>${hit ? escapeHtml(hit.alias || "—") : "—"}</td>
+        <td>${hit ? escapeHtml(hit.city + ", " + hit.country) : "—"}</td>
+        <td>${hit ? fmtDate(hit.iso_date) : "—"}</td>
+      `;
+      out.appendChild(tr);
+    });
+  }
+
+  function wireSubmit(){
+    const form = $("#submitForm");
+    const msg = $("#submitMsg");
+    if (!form) return;
+
+    form.addEventListener("submit", async (ev)=>{
+      ev.preventDefault();
+      msg.textContent = "Submitting…";
+
+      const payload = {
+        txid: $("#txid").value.trim(),
+        alias: $("#alias").value.trim(),
+        city: $("#city").value.trim(),
+        country: $("#country").value.trim()
+      };
+
+      if (!cfg.apiBase){
+        msg.textContent = "Submissions are disabled (static-only mode).";
+        return;
+      }
+
+      try{
+        const r = await fetch(cfg.apiBase.replace(/\/$/,"") + "/submit", {
+          method: "POST",
+          headers: {"Content-Type":"application/json", "Accept":"application/json"},
+          body: JSON.stringify(payload)
+        });
+        const data = await r.json().catch(()=>({}));
+        if (!r.ok){
+          msg.textContent = data.error || ("Submit failed (HTTP " + r.status + ")");
+          return;
+        }
+        msg.textContent = "Entry received ✔️  It may take a moment to appear.";
+        form.reset();
+
+        const log = await loadLog();
+        const entries = (log.entries || []);
+        const stats = computeHopStats(entries);
+        renderStatus(entries, stats);
+        renderLog(entries);
+        renderDestinations(entries);
+      }catch(e){
+        msg.textContent = "Submit failed. Try again later.";
+      }
+    });
+  }
+
+  async function boot(){
+    setCopy();
+    renderAddress();
+    renderQR();
+
+    const [log, bal] = await Promise.all([loadLog(), loadBalance()]);
+    const entries = (log.entries || []);
+
+    $("#balanceBtc").textContent = (bal !== null) ? fmtBtc(bal) : "—";
+
+    const stats = computeHopStats(entries);
+    renderStatus(entries, stats);
+    renderMap(stats);
+    renderDestinations(entries);
+    renderLog(entries);
+    wireSubmit();
+  }
+
+  document.addEventListener("DOMContentLoaded", boot);
+})();
+
+  </script>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>The Big Hop</h1>
+        <p class="sub">A message that moves only when someone decides to move it.</p>
+        <p class="sub tiny" style="margin-top:6px;">
+          Began at <span class="mono" id="originLine">—</span>. It waits. When it moves, distance is recorded.
+        </p>
+      </div>
+      <div class="cta">
+        <span class="pill">Balance: <span class="mono" id="balanceBtc">—</span> BTC</span>
+        <button class="btn" id="copyBtn" type="button">Copy address</button>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Current state</h2>
+        <div id="map" aria-label="Map showing last hop"></div>
+
+        <div class="metrics">
+          <div class="metric">
+            <div class="k">Last location</div>
+            <div class="v" id="lastLoc">—</div>
+          </div>
+          <div class="metric">
+            <div class="k">Previous location</div>
+            <div class="v" id="prevLoc">—</div>
+          </div>
+          <div class="metric">
+            <div class="k">Distance (last hop)</div>
+            <div class="v"><span id="lastHopKm">—</span> km</div>
+          </div>
+          <div class="metric">
+            <div class="k">Total distance</div>
+            <div class="v"><span id="totalKm">—</span> km</div>
+          </div>
+          <div class="metric">
+            <div class="k">Countries reached</div>
+            <div class="v" id="countriesReached">—</div>
+          </div>
+          <div class="metric">
+            <div class="k">Entries</div>
+            <div class="v mono" id="entryCount">—</div>
+          </div>
+        </div>
+
+        <p class="small" style="margin:12px 0 0;">
+          <span class="mono" id="hopLine">—</span>
+        </p>
+
+        <div class="sep"></div>
+
+        <h2>The Big Hop</h2>
+        <div class="metrics" style="grid-template-columns: 1fr;">
+          <div class="metric">
+            <div class="k">Biggest hop so far</div>
+            <div class="v"><span id="bigHopKm">—</span> km</div>
+            <div class="small" id="bigHopLine" style="margin-top:6px;">—</div>
+          </div>
+        </div>
+
+        <footer>
+          Movement is rare. Distance is the point.
+        </footer>
+      </div>
+
+      <div class="card">
+        <h2>Move the message</h2>
+
+        <div class="addrRow">
+          <div class="addrBox">
+            <div class="k">Bitcoin address</div>
+            <div class="v mono" id="btcAddress">—</div>
+            <p class="small" style="margin:8px 0 0;">
+              <a class="underline" id="addrExplorer" target="_blank" rel="noreferrer">View on explorer</a>
+            </p>
+            <p class="small" style="margin:10px 0 0;">
+              Send any amount. If you choose, leave an alias + city/country to mark where you found it.
+            </p>
+          </div>
+          <div class="qrBox"><div id="qr" aria-label="QR code for Bitcoin address"></div></div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="notice">
+          <div class="k">What this is / isn’t</div>
+          <div class="small" style="margin-top:6px;">
+            <strong>Is:</strong> a public record of distance, waiting, and movement.<br/>
+            <strong>Isn’t:</strong> an investment, a promise, a product, or a charity.
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <h2>Destination board</h2>
+        <p class="small" style="margin-top:0;">
+          First verified entry from a destination claims it. Claims are symbolic.
+        </p>
+        <div style="overflow:auto; margin-top:10px;">
+          <table aria-label="Destination board">
+            <thead>
+              <tr>
+                <th>Destination</th>
+                <th>Status</th>
+                <th>Claimed by</th>
+                <th>Location</th>
+                <th>When</th>
+              </tr>
+            </thead>
+            <tbody id="destBody"></tbody>
+          </table>
+        </div>
+
+        <footer>
+          You don’t have to act immediately. Some people wait. Distance matters.
+        </footer>
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top:14px;">
+      <div class="card">
+        <h2>Add your entry (optional)</h2>
+        <p class="small" style="margin-top:0;">
+          After you send a transaction, add an alias + city/country so your hop becomes part of the record.
+        </p>
+
+        <form id="submitForm">
+          <label for="txid">Transaction ID (TXID)</label>
+          <input id="txid" name="txid" placeholder="64-character hex TXID" autocomplete="off" required />
+
+          <label for="alias">Alias (optional)</label>
+          <input id="alias" name="alias" placeholder="Nickname only (no personal details)" maxlength="30" />
+
+          <div class="row2">
+            <div>
+              <label for="city">City</label>
+              <input id="city" name="city" placeholder="e.g., Victoria" required />
+            </div>
+            <div>
+              <label for="country">Country</label>
+              <input id="country" name="country" placeholder="e.g., Canada" required />
+            </div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="miniBtn" type="submit">Submit</button>
+            <span class="tiny">City-level only. No personal info.</span>
+          </div>
+
+          <div id="submitMsg" class="notice" style="margin-top:12px;">
+            If submissions are disabled, the message can still move. The hop still counts.
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Travel log</h2>
+        <p class="small" style="margin-top:0;">Latest entries (most recent first).</p>
+
+        <div style="overflow:auto; margin-top:10px;">
+          <table aria-label="Travel log">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Alias</th>
+                <th>Location</th>
+                <th>Amount</th>
+                <th>When</th>
+                <th>TXID</th>
+              </tr>
+            </thead>
+            <tbody id="logBody"></tbody>
+          </table>
+        </div>
+
+        <footer>
+          This can sit dormant for years — that’s part of the randomness.
+        </footer>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:14px;">
+      <h2>What this is</h2>
+      <p class="small" style="margin-top:0;">
+        This is not an investment. This is not a product. This is not a promise.
+      </p>
+      <p class="small">
+        It is a record of distance, waiting, and movement.
+        The message may sit still for months. It may sit still for years.
+        And then, one day, it may make a very big hop.
+      </p>
+    </section>
+  </div>
+</body>
+</html>
