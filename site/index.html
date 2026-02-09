@@ -31,6 +31,14 @@
     --bg0: rgba(250,250,252,1);
     --glass: rgba(255,255,255,.70);
   }
+      /* Prevent long TXIDs from breaking layout */
+.travelLogTable td.txid,
+.travelLogTable td:nth-child(5) {  /* adjust if TXID column index differs */
+  max-width: 180px;        /* tweak to taste */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
 }
 *{box-sizing:border-box}
 body{
@@ -181,14 +189,6 @@ tr:last-child td{ border-bottom:none; }
   padding: 10px;
   background: rgba(255,255,255,.03);
   color: var(--muted);
-}
-    /* Prevent long TXIDs from breaking layout */
-.travelLogTable td.txid,
-.travelLogTable td:nth-child(5) {  /* adjust if TXID column index differs */
-  max-width: 180px;        /* tweak to taste */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .nav{
